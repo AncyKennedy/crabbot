@@ -1,349 +1,1722 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CrabBot 🦀</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
   <style>
     :root {
-      --bg:       #0d0d0d;
-      --surface:  #161616;
-      --border:   #2a2a2a;
-      --accent:   #ff5e1a;
-      --accent2:  #ffb347;
-      --text:     #f0ede8;
-      --muted:    #666;
-      --bot-bg:   #1c1c1c;
-      --user-bg:  #ff5e1a18;
-      --radius:   18px;
+      --navy: #020b18;
+      --deep: #040f22;
+      --abyss: #071630;
+      --electric: #00aaff;
+      --iceblue: #5dd8ff;
+      --frost: #a8e6ff;
+      --amber: #ffaa00;
+      --sand: #ffe8b0;
+      --mist: #6baecf;
+      --border: rgba(0, 170, 255, 0.15);
+      --r: 18px;
+      --flower: #ff9ecd;
+      --mud: #4dffb0;
+      --three: #ffd166;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
     body {
-      background: var(--bg); color: var(--text);
-      font-family: 'Syne', sans-serif;
-      height: 100vh; display: flex; flex-direction: column; align-items: center;
+      height: 100%;
+      overflow: hidden;
     }
+
+    body {
+      background: var(--navy);
+      color: #d8f0ff;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: none;
+    }
+
+    /* ── CUSTOM CURSOR ── */
+    #cursor {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      background: var(--electric);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 16px var(--electric), 0 0 40px rgba(0, 170, 255, 0.4);
+      mix-blend-mode: screen;
+      transition: width .15s, height .15s, background .15s;
+    }
+
+    #cursorRing {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(0, 170, 255, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      opacity: .7;
+      transition: width .35s cubic-bezier(.23, 1, .32, 1), height .35s cubic-bezier(.23, 1, .32, 1), border-color .2s;
+    }
+
+    .cursor-grow #cursor {
+      width: 22px;
+      height: 22px;
+      background: var(--iceblue);
+    }
+
+    .cursor-grow #cursorRing {
+      width: 56px;
+      height: 56px;
+      border-color: var(--iceblue);
+      opacity: .4;
+    }
+
+    /* ── OCEAN BG ── */
+    #oceanBg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, #020b18 0%, #040f22 45%, #071630 100%);
+      overflow: hidden;
+    }
+
+    #oceanBg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 12% 28%, rgba(0, 100, 200, 0.3) 0%, transparent 70%),
+        radial-gradient(ellipse 55% 70% at 88% 78%, rgba(0, 50, 130, 0.22) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 35% at 50% 105%, rgba(0, 170, 255, 0.08) 0%, transparent 60%);
+    }
+
+    #oceanBg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 170, 255, 0.01) 3px, rgba(0, 170, 255, 0.01) 4px);
+    }
+
+    /* ── SVG SEA FLOOR ── */
+    #seaFloor {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 0;
+      pointer-events: none;
+      height: 180px;
+      opacity: .18;
+    }
+
+    /* ── PARTICLES ── */
+    .p {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: rise linear infinite;
+      background: radial-gradient(circle, var(--electric) 0%, transparent 70%);
+    }
+
+    @keyframes rise {
+      0% {
+        transform: translateY(105vh) translateX(0);
+        opacity: 0;
+      }
+
+      5% {
+        opacity: 1;
+      }
+
+      95% {
+        opacity: .6;
+      }
+
+      100% {
+        transform: translateY(-5vh) translateX(18px);
+        opacity: 0;
+      }
+    }
+
+    /* ── INTRO 1.25s ── */
+    #intro {
+      position: fixed;
+      inset: 0;
+      z-index: 9990;
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      animation: iOut .45s ease 1.1s forwards;
+    }
+
+    @keyframes iOut {
+      to {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+
+    .ic {
+      font-size: 90px;
+      line-height: 1;
+      animation: iCrab 1s cubic-bezier(.22, 1, .36, 1) forwards;
+    }
+
+    @keyframes iCrab {
+      0% {
+        transform: scale(0) rotate(-30deg);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.2) rotate(6deg);
+        opacity: 1;
+      }
+
+      72% {
+        transform: scale(.94) rotate(-3deg);
+      }
+
+      88% {
+        transform: scale(1.05) rotate(1deg);
+      }
+
+      100% {
+        transform: scale(60);
+        opacity: 0;
+      }
+    }
+
+    .introWave {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      animation: waveShift 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes waveShift {
+      0% {
+        transform: translateX(-10px);
+      }
+
+      100% {
+        transform: translateX(10px);
+      }
+    }
+
+    .it {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.2rem;
+      color: var(--electric);
+      letter-spacing: 8px;
+      opacity: 0;
+      animation: iFade .35s ease .28s forwards;
+      text-shadow: 0 0 30px rgba(0, 170, 255, .9), 0 0 70px rgba(0, 170, 255, .4);
+    }
+
+    .isub {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: 4px;
+      color: var(--mist);
+      opacity: 0;
+      animation: iFade .3s ease .5s forwards;
+    }
+
+    @keyframes iFade {
+      to {
+        opacity: 1;
+      }
+    }
+
+    .ibar {
+      width: 140px;
+      height: 2px;
+      background: rgba(0, 170, 255, .15);
+      border-radius: 2px;
+      overflow: hidden;
+      opacity: 0;
+      animation: iFade .3s ease .55s forwards;
+    }
+
+    .ibar-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--electric), var(--iceblue));
+      border-radius: 2px;
+      box-shadow: 0 0 10px var(--electric);
+      animation: ibarFill .8s ease .55s forwards;
+    }
+
+    @keyframes ibarFill {
+      to {
+        width: 100%;
+      }
+    }
+
+    /* ── APP ── */
+    #app {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 780px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      animation: aIn .6s ease 1.25s forwards;
+    }
+
+    @keyframes aIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* ── HEADER ── */
     header {
-      width: 100%; max-width: 720px;
-      padding: 20px 24px 14px;
-      display: flex; align-items: center; gap: 14px;
+      padding: 13px 22px 11px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
       border-bottom: 1px solid var(--border);
+      background: rgba(2, 11, 24, .88);
+      backdrop-filter: blur(22px);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
     }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--electric), var(--iceblue), transparent);
+      animation: hline 3.5s ease-in-out infinite;
+    }
+
+    @keyframes hline {
+
+      0%,
+      100% {
+        opacity: .3;
+        transform: scaleX(.5);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scaleX(1);
+      }
+    }
+
+    .sonarRing {
+      position: absolute;
+      left: 38px;
+      top: 50%;
+      border: 1px solid rgba(0, 170, 255, .15);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: sonar 3s ease-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes sonar {
+      0% {
+        width: 20px;
+        height: 20px;
+        opacity: .8;
+      }
+
+      100% {
+        width: 120px;
+        height: 120px;
+        opacity: 0;
+      }
+    }
+
+    .sonarRing:nth-child(2) {
+      animation-delay: 1s;
+    }
+
+    .sonarRing:nth-child(3) {
+      animation-delay: 2s;
+    }
+
     .logo {
-      width: 44px; height: 44px; background: var(--accent);
-      border-radius: 12px; display: grid; place-items: center; font-size: 22px;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #003a7a, #001f50);
+      border: 1px solid rgba(0, 170, 255, .42);
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 0 24px rgba(0, 170, 255, .38), 0 4px 16px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(0, 170, 255, .22);
+      animation: logoPulse 3s ease-in-out infinite;
     }
-    .header-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
-    .header-text p  { font-size: 0.72rem; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
-    .status-dot {
-      margin-left: auto; display: flex; align-items: center; gap: 6px;
-      font-size: 0.72rem; font-family: 'DM Mono', monospace; color: var(--muted);
-    }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #3a3a3a; transition: background 0.3s; }
-    .dot.online { background: #4caf7d; box-shadow: 0 0 6px #4caf7d88; }
 
+    @keyframes logoPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 24px rgba(0, 170, 255, .38), 0 4px 16px rgba(0, 0, 0, .5);
+      }
+
+      50% {
+        box-shadow: 0 0 44px rgba(0, 170, 255, .7), 0 4px 22px rgba(0, 0, 0, .5);
+      }
+    }
+
+    .htitle {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.75rem;
+      letter-spacing: 4px;
+      background: linear-gradient(90deg, var(--electric), var(--iceblue), var(--frost), var(--electric));
+      background-size: 300% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 5s linear infinite;
+    }
+
+    @keyframes shimmer {
+      to {
+        background-position: 300% center;
+      }
+    }
+
+    .hsub {
+      font-size: .6rem;
+      color: var(--mist);
+      font-family: 'DM Mono', monospace;
+      margin-top: 2px;
+      letter-spacing: 1.5px;
+      opacity: .75;
+    }
+
+    .depthMeter {
+      margin-left: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .depthLabel {
+      font-family: 'DM Mono', monospace;
+      font-size: .58rem;
+      letter-spacing: 1.5px;
+      color: var(--mist);
+      opacity: .7;
+    }
+
+    .depthTrack {
+      width: 80px;
+      height: 4px;
+      background: rgba(0, 170, 255, .1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .depthFill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--electric), var(--iceblue));
+      border-radius: 2px;
+      transition: width .4s ease;
+      box-shadow: 0 0 8px var(--electric);
+    }
+
+    .sdot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .63rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--mist);
+      margin-top: 3px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #0e2030;
+      transition: all .4s;
+      border: 1px solid rgba(0, 170, 255, .2);
+    }
+
+    .dot.on {
+      background: var(--electric);
+      box-shadow: 0 0 12px var(--electric);
+    }
+
+    /* ── WAVE DIVIDER ── */
+    .waveDivider {
+      flex-shrink: 0;
+      height: 22px;
+      overflow: hidden;
+      background: transparent;
+      margin-top: -1px;
+    }
+
+    .waveDivider svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── CHAT ── */
     #chat {
-      flex: 1; width: 100%; max-width: 720px;
-      overflow-y: auto; padding: 24px 20px;
-      display: flex; flex-direction: column; gap: 16px;
-      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 170, 255, .18) transparent;
     }
-    .msg { display: flex; gap: 10px; animation: fadeUp 0.3s ease both; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .msg.user { flex-direction: row-reverse; }
-    .avatar {
-      width: 32px; height: 32px; border-radius: 10px;
-      display: grid; place-items: center; font-size: 16px; flex-shrink: 0;
-    }
-    .msg.bot  .avatar { background: var(--accent); }
-    .msg.user .avatar { background: #2a2a2a; }
-    .bubble {
-      max-width: 78%; padding: 12px 16px;
-      border-radius: var(--radius); font-size: 0.88rem; line-height: 1.65;
-    }
-    .msg.bot  .bubble { background: var(--bot-bg); border: 1px solid var(--border); border-top-left-radius: 4px; }
-    .msg.user .bubble { background: var(--user-bg); border: 1px solid #ff5e1a33; border-top-right-radius: 4px; }
-    .bubble img.preview { width: 100%; max-width: 260px; border-radius: 10px; margin-top: 8px; display: block; }
 
-    /* ── Result card ── */
-    .result-card {
-      margin-top: 10px; background: #0d0d0d;
-      border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px;
+    #chat::-webkit-scrollbar {
+      width: 3px;
     }
-    .species-title {
-      font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800;
-      color: var(--accent2); margin-bottom: 10px;
+
+    #chat::-webkit-scrollbar-thumb {
+      background: rgba(0, 170, 255, .18);
+      border-radius: 3px;
     }
-    .name-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-family: 'DM Mono', monospace; font-size: 0.75rem; }
-    .name-table td { padding: 5px 8px; }
-    .name-table td:first-child { color: var(--muted); width: 90px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; }
-    .row-english td:last-child { color: #f0ede8; font-weight: 500; }
-    .row-science td:last-child { color: #7eb8f7; font-style: italic; }
-    .row-tamil   td:last-child { color: #7ef7a0; }
-    .divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
-    .confidence-label { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-bottom: 8px; }
-    .bar-row { margin-top: 5px; }
-    .bar-label { display: flex; justify-content: space-between; color: var(--muted); margin-bottom: 3px; font-size: 0.72rem; font-family: 'DM Mono', monospace; }
-    .bar-track { background: #2a2a2a; border-radius: 4px; height: 6px; overflow: hidden; }
-    .bar-fill  { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.7s ease; }
 
-    /* ── Typing ── */
-    .typing .bubble { display: flex; align-items: center; gap: 5px; padding: 14px 16px; }
-    .typing .bubble span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: bounce 1.2s infinite; }
-    .typing .bubble span:nth-child(2) { animation-delay: 0.2s; }
-    .typing .bubble span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+    /* ── MESSAGES ── */
+    .msg {
+      display: flex;
+      gap: 10px;
+      animation: mIn .35s cubic-bezier(.34, 1.56, .64, 1) both;
+    }
 
-    /* ── Chips ── */
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    @keyframes mIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .msg.user {
+      flex-direction: row-reverse;
+    }
+
+    .msg-wrap {
+      position: relative;
+      max-width: 76%;
+    }
+
+    .av {
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      background: linear-gradient(135deg, #003a7a, #001f50);
+      box-shadow: 0 0 14px rgba(0, 170, 255, .45);
+      transition: transform .2s;
+      cursor: default;
+      border: 1px solid rgba(0, 170, 255, .35);
+      position: relative;
+    }
+
+    .msg.user .av {
+      background: linear-gradient(135deg, #061a30, #030e1e);
+      box-shadow: 0 0 12px rgba(0, 170, 255, .18);
+      border: 1px solid rgba(0, 170, 255, .18);
+      font-size: 16px;
+    }
+
+    .av:hover {
+      transform: scale(1.15) rotate(-12deg);
+    }
+
+    .av-bot::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 9px;
+      height: 9px;
+      background: var(--electric);
+      border-radius: 50%;
+      border: 2px solid var(--navy);
+      box-shadow: 0 0 8px var(--electric);
+    }
+
+    .bub {
+      padding: 11px 15px;
+      border-radius: var(--r);
+      font-size: .86rem;
+      line-height: 1.72;
+      position: relative;
+      transition: box-shadow .2s;
+    }
+
+    .msg.bot .bub {
+      background: linear-gradient(145deg, rgba(0, 20, 52, .93), rgba(0, 10, 30, .97));
+      border: 1px solid var(--border);
+      border-top-left-radius: 4px;
+      box-shadow: 0 4px 28px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(0, 170, 255, .08);
+    }
+
+    .msg.bot .bub:hover {
+      box-shadow: 0 8px 36px rgba(0, 0, 0, .6), 0 0 0 1px rgba(0, 170, 255, .18), inset 0 1px 0 rgba(0, 170, 255, .12);
+    }
+
+    .msg.user .bub {
+      background: linear-gradient(145deg, rgba(0, 90, 190, .16), rgba(0, 55, 130, .1));
+      border: 1px solid rgba(0, 170, 255, .24);
+      border-top-right-radius: 4px;
+    }
+
+    .bub img.prev {
+      width: 100%;
+      max-width: 260px;
+      border-radius: 12px;
+      margin-top: 8px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HOVER ACTIONS ── */
+    .msgActions {
+      position: absolute;
+      right: 8px;
+      top: -16px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+
+    .msg-wrap:hover .msgActions {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .actBtn {
+      background: rgba(4, 15, 34, .95);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px 7px;
+      font-size: .68rem;
+      cursor: pointer;
+      color: var(--mist);
+      transition: all .15s;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .actBtn:hover {
+      background: rgba(0, 80, 180, .3);
+      color: var(--iceblue);
+      border-color: rgba(0, 170, 255, .35);
+    }
+
+    /* ── REACTIONS ── */
+    .reactions {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .rxn {
+      background: rgba(0, 170, 255, .07);
+      border: 1px solid rgba(0, 170, 255, .15);
+      border-radius: 12px;
+      padding: 2px 7px;
+      font-size: .75rem;
+      cursor: pointer;
+      transition: all .18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .rxn:hover,
+    .rxn.active {
+      background: rgba(0, 170, 255, .18);
+      border-color: rgba(0, 170, 255, .4);
+      transform: scale(1.08);
+    }
+
+    .rxn .cnt {
+      font-family: 'DM Mono', monospace;
+      font-size: .62rem;
+      color: var(--mist);
+    }
+
+    /* ── TYPEWRITER CURSOR ── */
+    .tw-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--electric);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink .7s step-end infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* ── RESULT CARD ── */
+    .rc {
+      margin-top: 10px;
+      background: linear-gradient(145deg, rgba(0, 8, 24, .97), rgba(0, 18, 46, .95));
+      border: 1px solid rgba(0, 170, 255, .22);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 0 40px rgba(0, 170, 255, .07), inset 0 1px 0 rgba(0, 170, 255, .07);
+    }
+
+    .sptitle {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+      color: var(--amber);
+      margin-bottom: 6px;
+      text-shadow: 0 0 22px rgba(255, 170, 0, .5);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dnaBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: .55rem;
+      letter-spacing: 1.5px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-left: auto;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .dnaBadge.flower {
+      background: rgba(255, 158, 205, .12);
+      color: var(--flower);
+      border: 1px solid rgba(255, 158, 205, .25);
+    }
+
+    .dnaBadge.mud {
+      background: rgba(77, 255, 176, .1);
+      color: var(--mud);
+      border: 1px solid rgba(77, 255, 176, .22);
+    }
+
+    .dnaBadge.three {
+      background: rgba(255, 209, 102, .1);
+      color: var(--three);
+      border: 1px solid rgba(255, 209, 102, .22);
+    }
+
+    .nt {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-family: 'DM Mono', monospace;
+      font-size: .71rem;
+    }
+
+    .nt td {
+      padding: 4px 8px;
+    }
+
+    .nt td:first-child {
+      color: var(--mist);
+      width: 88px;
+      font-size: .6rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+
+    .re td:last-child {
+      color: var(--sand);
+      font-weight: 500;
+    }
+
+    .rs td:last-child {
+      color: var(--iceblue);
+      font-style: italic;
+    }
+
+    .rt td:last-child {
+      color: var(--frost);
+    }
+
+    .divLine {
+      border: none;
+      border-top: 1px solid rgba(0, 170, 255, .1);
+      margin: 8px 0;
+    }
+
+    .clbl {
+      font-family: 'DM Mono', monospace;
+      font-size: .67rem;
+      color: var(--mist);
+      margin-bottom: 6px;
+    }
+
+    .br {
+      margin-top: 6px;
+    }
+
+    .bl {
+      display: flex;
+      justify-content: space-between;
+      color: var(--mist);
+      margin-bottom: 3px;
+      font-size: .67rem;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .btr {
+      background: rgba(255, 255, 255, .04);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bf {
+      height: 100%;
+      width: 0;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--electric), var(--iceblue));
+      transition: width 1.1s cubic-bezier(.34, 1.2, .64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bf::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .5), transparent);
+      animation: barShine 2s ease 1.2s forwards;
+    }
+
+    @keyframes barShine {
+      0% {
+        left: -60%;
+      }
+
+      100% {
+        left: 160%;
+      }
+    }
+
+    /* ── TYPING ── */
+    .typing .bub {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 13px 16px;
+    }
+
+    .cd {
+      font-size: 16px;
+      animation: cj 1.3s infinite;
+      display: inline-block;
+    }
+
+    .cd:nth-child(2) {
+      animation-delay: .2s;
+    }
+
+    .cd:nth-child(3) {
+      animation-delay: .4s;
+    }
+
+    @keyframes cj {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      30% {
+        transform: translateY(-10px) rotate(-20deg);
+      }
+    }
+
+    /* ── CHIPS ── */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
     .chip {
-      background: #1e1e1e; border: 1px solid var(--border); border-radius: 20px;
-      padding: 5px 12px; font-size: 0.75rem; cursor: pointer; color: var(--text);
-      transition: border-color 0.2s, background 0.2s; font-family: 'DM Mono', monospace;
+      background: rgba(0, 170, 255, .07);
+      border: 1px solid rgba(0, 170, 255, .22);
+      border-radius: 20px;
+      padding: 5px 13px;
+      font-size: .71rem;
+      cursor: pointer;
+      color: var(--iceblue);
+      font-family: 'DM Mono', monospace;
+      transition: all .2s;
     }
-    .chip:hover { border-color: var(--accent); background: #1f1410; }
 
-    /* ── Input ── */
-    #input-area { width: 100%; max-width: 720px; padding: 12px 20px 24px; border-top: 1px solid var(--border); }
-    .input-row { display: flex; gap: 10px; align-items: flex-end; }
-    #upload-btn {
-      width: 44px; height: 44px; flex-shrink: 0; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 12px; cursor: pointer;
-      display: grid; place-items: center; font-size: 20px; transition: border-color 0.2s, background 0.2s;
+    .chip:hover {
+      background: rgba(0, 170, 255, .18);
+      border-color: var(--electric);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0, 170, 255, .22);
     }
-    #upload-btn:hover { border-color: var(--accent); background: #1f1410; }
-    #file-input { display: none; }
-    #text-input {
-      flex: 1; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 11px 16px; color: var(--text);
-      font-family: 'Syne', sans-serif; font-size: 0.88rem; resize: none;
-      outline: none; transition: border-color 0.2s; height: 44px;
+
+    /* ── INPUT BAR ── */
+    #ia {
+      padding: 8px 14px 16px;
+      border-top: 1px solid var(--border);
+      background: rgba(2, 11, 24, .92);
+      backdrop-filter: blur(22px);
+      position: relative;
+      flex-shrink: 0;
     }
-    #text-input:focus { border-color: var(--accent); }
-    #text-input::placeholder { color: var(--muted); }
-    #send-btn {
-      width: 44px; height: 44px; flex-shrink: 0; background: var(--accent);
-      border: none; border-radius: 12px; cursor: pointer;
-      display: grid; place-items: center; font-size: 20px; transition: opacity 0.2s, transform 0.1s;
+
+    #ia::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--electric), var(--iceblue), transparent);
+      opacity: .5;
     }
-    #send-btn:hover  { opacity: 0.85; }
-    #send-btn:active { transform: scale(0.93); }
-    .hint { text-align: center; font-size: 0.7rem; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 8px; }
-    #chat::-webkit-scrollbar { width: 4px; }
-    #chat::-webkit-scrollbar-track { background: transparent; }
-    #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .ir {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .ir.typing-active #ti {
+      border-color: rgba(0, 170, 255, .45);
+      box-shadow: 0 0 0 3px rgba(0, 170, 255, .1), 0 0 20px rgba(0, 170, 255, .08);
+    }
+
+    .ib {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      background: linear-gradient(145deg, rgba(0, 28, 68, .9), rgba(0, 14, 38, .95));
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      transition: all .2s;
+      color: var(--electric);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ib:hover {
+      border-color: var(--electric);
+      background: linear-gradient(145deg, rgba(0, 60, 140, .5), rgba(0, 28, 80, .6));
+      transform: translateY(-2px);
+      box-shadow: 0 4px 18px rgba(0, 170, 255, .28);
+    }
+
+    .ib:active {
+      transform: scale(.9);
+    }
+
+    #fi {
+      display: none;
+    }
+
+    #ti {
+      flex: 1;
+      background: linear-gradient(145deg, rgba(0, 16, 42, .85), rgba(0, 9, 26, .92));
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 11px 16px;
+      color: #d8f0ff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .87rem;
+      resize: none;
+      outline: none;
+      transition: border-color .25s, box-shadow .25s;
+      height: 44px;
+    }
+
+    #ti:focus {
+      border-color: rgba(0, 170, 255, .4);
+      box-shadow: 0 0 0 3px rgba(0, 170, 255, .1);
+    }
+
+    #ti::placeholder {
+      color: rgba(107, 174, 207, .4);
+    }
+
+    #sb {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #005fcc, #003a8a);
+      border: 1px solid rgba(0, 170, 255, .45);
+      border-radius: 13px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      transition: transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 20px rgba(0, 100, 220, .55), inset 0 1px 0 rgba(0, 200, 255, .22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #sb:hover {
+      box-shadow: 0 8px 28px rgba(0, 130, 255, .7);
+    }
+
+    #sb:active {
+      transform: scale(.9);
+    }
+
+    #charCnt {
+      font-family: 'DM Mono', monospace;
+      font-size: .58rem;
+      color: var(--mist);
+      text-align: right;
+      margin-top: 4px;
+      opacity: 0;
+      transition: opacity .2s;
+      letter-spacing: .5px;
+    }
+
+    #charCnt.show {
+      opacity: .6;
+    }
+
+    #charCnt.warn {
+      opacity: 1;
+      color: var(--amber);
+    }
+
+    /* ── RIPPLE ── */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(0, 170, 255, .35);
+      transform: scale(0);
+      animation: rippleOut .55s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes rippleOut {
+      to {
+        transform: scale(3.5);
+        opacity: 0;
+      }
+    }
+
+    /* ── CAMERA MODAL ── */
+    #camModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 5, 18, .93);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #camModal.open {
+      display: flex;
+      animation: modalIn .3s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(.92);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .camBox {
+      background: linear-gradient(145deg, #040f22, #071630);
+      border: 1px solid rgba(0, 170, 255, .32);
+      border-radius: 22px;
+      padding: 22px;
+      width: min(92vw, 420px);
+      box-shadow: 0 0 70px rgba(0, 100, 220, .28), 0 28px 70px rgba(0, 0, 0, .75);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .camTitle {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.35rem;
+      letter-spacing: 3px;
+      color: var(--iceblue);
+      text-align: center;
+    }
+
+    #camVideo {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #000;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: none;
+    }
+
+    .vidWrap {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .vidOverlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 170, 255, .03) 2px, rgba(0, 170, 255, .03) 3px);
+    }
+
+    .vidOverlay::before,
+    .vidOverlay::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-color: var(--electric);
+      border-style: solid;
+      opacity: .8;
+    }
+
+    .vidOverlay::before {
+      top: 10px;
+      left: 10px;
+      border-width: 2px 0 0 2px;
+      border-radius: 4px 0 0 0;
+    }
+
+    .vidOverlay::after {
+      bottom: 10px;
+      right: 10px;
+      border-width: 0 2px 2px 0;
+      border-radius: 0 0 4px 0;
+    }
+
+    .camBtns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .camBtn {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      font-weight: 500;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #snapBtn {
+      background: linear-gradient(135deg, #005fcc, #003a8a);
+      color: #d8f0ff;
+      border: 1px solid rgba(0, 170, 255, .4);
+      box-shadow: 0 4px 18px rgba(0, 100, 220, .45);
+    }
+
+    #snapBtn:hover {
+      box-shadow: 0 6px 26px rgba(0, 130, 255, .65);
+      transform: translateY(-1px);
+    }
+
+    #closeCam {
+      background: rgba(255, 85, 51, .1);
+      color: #ff8866;
+      border: 1px solid rgba(255, 85, 51, .22);
+    }
+
+    #closeCam:hover {
+      background: rgba(255, 85, 51, .22);
+      transform: translateY(-1px);
+    }
+
+    #camStatus {
+      font-family: 'DM Mono', monospace;
+      font-size: .68rem;
+      color: var(--mist);
+      text-align: center;
+    }
+
+    #camCanvas {
+      display: none;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: linear-gradient(135deg, rgba(0, 60, 140, .95), rgba(0, 30, 80, .97));
+      border: 1px solid rgba(0, 170, 255, .3);
+      border-radius: 12px;
+      padding: 8px 18px;
+      font-family: 'DM Mono', monospace;
+      font-size: .72rem;
+      color: var(--iceblue);
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── SCROLL BTN ── */
+    #scrollBtn {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      z-index: 100;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #005fcc, #003a8a);
+      border: 1px solid rgba(0, 170, 255, .4);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: 0 4px 18px rgba(0, 100, 220, .5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      transform: translateY(10px);
+    }
+
+    #scrollBtn.show {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+
+    #scrollBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0, 130, 255, .65);
+    }
   </style>
 </head>
+
 <body>
 
-<header>
-  <div class="logo">🦀</div>
-  <div class="header-text">
-    <h1>CrabBot</h1>
-    <p>crab-species-classifier · v2.0</p>
+  <div id="cursor"></div>
+  <div id="cursorRing"></div>
+  <div id="oceanBg"></div>
+
+  <!-- Animated SVG Sea Floor -->
+  <svg id="seaFloor" viewBox="0 0 1200 180" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,120 C150,110 300,130 450,118 C600,106 750,128 900,115 C1050,102 1150,120 1200,114 L1200,180 L0,180 Z"
+      fill="rgba(0,100,180,0.4)" />
+    <g transform="translate(80,120)">
+      <path d="M0,0 C-8,-15 8,-30 -5,-50 C-18,-70 5,-80 0,-100" stroke="rgba(0,200,150,0.6)" stroke-width="3"
+        fill="none" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;4 0 0;-4 0 0;0 0 0" dur="3s"
+          repeatCount="indefinite" />
+      </path>
+      <ellipse cx="-5" cy="-100" rx="7" ry="10" fill="rgba(0,200,150,0.4)" />
+    </g>
+    <g transform="translate(400,115)">
+      <path d="M0,0 C10,-12 -10,-28 8,-48 C25,-68 -8,-85 5,-110" stroke="rgba(0,170,255,0.5)" stroke-width="3"
+        fill="none" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-5 0 0;5 0 0;0 0 0" dur="4s"
+          repeatCount="indefinite" />
+      </path>
+      <ellipse cx="5" cy="-110" rx="9" ry="12" fill="rgba(0,170,255,0.3)" />
+    </g>
+    <g transform="translate(750,118)">
+      <path d="M0,0 C-6,-18 9,-35 -3,-55 C-15,-75 7,-90 -2,-115" stroke="rgba(0,220,180,0.55)" stroke-width="2.5"
+        fill="none" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;6 0 0;-3 0 0;0 0 0" dur="3.5s"
+          repeatCount="indefinite" />
+      </path>
+      <ellipse cx="-2" cy="-115" rx="8" ry="11" fill="rgba(0,220,180,0.3)" />
+    </g>
+    <g transform="translate(1050,112)">
+      <path d="M0,0 C8,-14 -9,-30 6,-52 C20,-72 -5,-88 3,-108" stroke="rgba(0,150,220,0.5)" stroke-width="3" fill="none"
+        stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-4 0 0;4 0 0;0 0 0" dur="2.8s"
+          repeatCount="indefinite" />
+      </path>
+      <ellipse cx="3" cy="-108" rx="7" ry="9" fill="rgba(0,150,220,0.35)" />
+    </g>
+    <ellipse cx="200" cy="128" rx="28" ry="14" fill="rgba(0,60,110,0.6)" />
+    <ellipse cx="620" cy="124" rx="20" ry="10" fill="rgba(0,50,100,0.5)" />
+    <ellipse cx="950" cy="126" rx="32" ry="15" fill="rgba(0,65,120,0.55)" />
+    <circle cx="160" cy="90" r="3" fill="none" stroke="rgba(0,170,255,0.3)" stroke-width="1">
+      <animate attributeName="cy" values="90;10" dur="6s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.6;0" dur="6s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="560" cy="100" r="2" fill="none" stroke="rgba(0,200,255,0.3)" stroke-width="1">
+      <animate attributeName="cy" values="100;20" dur="8s" repeatCount="indefinite" begin="2s" />
+      <animate attributeName="opacity" values="0.5;0" dur="8s" repeatCount="indefinite" begin="2s" />
+    </circle>
+    <!-- Swimming fish -->
+    <g opacity="0.35">
+      <animateTransform attributeName="transform" type="translate" values="1200,60;-80,60" dur="12s"
+        repeatCount="indefinite" />
+      <path d="M0,0 C10,-6 18,-6 24,0 C18,6 10,6 0,0 Z M24,0 L32,-5 L30,0 L32,5 Z" fill="rgba(0,170,255,0.7)" />
+    </g>
+    <g opacity="0.28">
+      <animateTransform attributeName="transform" type="translate" values="-60,100;1260,100" dur="18s"
+        repeatCount="indefinite" begin="5s" />
+      <path d="M0,0 C8,-4 14,-4 18,0 C14,4 8,4 0,0 Z M18,0 L24,-4 L22,0 L24,4 Z" fill="rgba(0,200,180,0.7)" />
+    </g>
+  </svg>
+
+  <!-- Particles -->
+  <div class="p" style="width:4px;height:4px;left:12%;animation-duration:10s;animation-delay:0s;opacity:.65"></div>
+  <div class="p" style="width:3px;height:3px;left:28%;animation-duration:14s;animation-delay:2s;opacity:.45"></div>
+  <div class="p" style="width:5px;height:5px;left:52%;animation-duration:9s;animation-delay:4s;opacity:.55"></div>
+  <div class="p" style="width:3px;height:3px;left:71%;animation-duration:13s;animation-delay:1s;opacity:.4"></div>
+  <div class="p" style="width:4px;height:4px;left:88%;animation-duration:11s;animation-delay:6s;opacity:.65"></div>
+  <div class="p"
+    style="width:6px;height:6px;left:40%;animation-duration:12s;animation-delay:3s;opacity:.32;background:radial-gradient(circle,var(--iceblue) 0%,transparent 70%)">
   </div>
-  <div class="status-dot">
-    <div class="dot" id="dot"></div>
-    <span id="status-text">connecting…</span>
+  <div class="p"
+    style="width:3px;height:3px;left:62%;animation-duration:8s;animation-delay:5s;opacity:.48;background:radial-gradient(circle,var(--frost) 0%,transparent 70%)">
   </div>
-</header>
+  <div class="p" style="width:2px;height:2px;left:20%;animation-duration:16s;animation-delay:7s;opacity:.38"></div>
+  <div class="p" style="width:4px;height:4px;left:78%;animation-duration:7.5s;animation-delay:1.5s;opacity:.5"></div>
+  <div class="p" style="width:3px;height:3px;left:35%;animation-duration:11s;animation-delay:8s;opacity:.42"></div>
 
-<div id="chat"></div>
-
-<div id="input-area">
-  <div class="input-row">
-    <button id="upload-btn" title="Upload crab photo">📎</button>
-    <input type="file" id="file-input" accept="image/*"/>
-    <textarea id="text-input" placeholder="Ask me anything about crabs… or upload a photo!" rows="1"></textarea>
-    <button id="send-btn">➤</button>
+  <!-- INTRO 1.25s -->
+  <div id="intro">
+    <svg class="introWave" viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,40 C240,10 480,70 720,40 C960,10 1200,70 1440,40 L1440,80 L0,80 Z" fill="rgba(0,100,200,0.12)" />
+      <path d="M0,50 C200,20 500,80 720,50 C940,20 1200,80 1440,50 L1440,80 L0,80 Z" fill="rgba(0,170,255,0.07)" />
+    </svg>
+    <div class="ic">🦀</div>
+    <div class="it">CRABBOT</div>
+    <div class="isub">DEEP OCEAN INTELLIGENCE</div>
+    <div class="ibar">
+      <div class="ibar-fill"></div>
+    </div>
   </div>
-  <p class="hint">📎 Upload photo to classify &nbsp;·&nbsp; 💬 Ask any crab question</p>
-</div>
 
-<script>
-  // ── UPDATE THIS with your Cloudflare tunnel URL from Colab ────────────────
-  const API = "https://signal-billion-exclusively-accordingly.trycloudflare.com";  // ← replace with https://xxxx.trycloudflare.com
+  <div id="toast"></div>
+  <div id="scrollBtn" onclick="smoothScroll()">↓</div>
 
-  // ── Trilingual species data ───────────────────────────────────────────────
-  const CRAB_INFO = {
-    "flower_crab": {
-      english:    "Flower Crab",
-      scientific: "Portunus pelagicus",
-      tamil:      "பூ நண்டு (Poo Nandu)"
-    },
-    "mud_crab": {
-      english:    "Mud Crab",
-      scientific: "Scylla serrata",
-      tamil:      "சேற்று நண்டு (Shetru Nandu)"
-    },
-    "three_dot_crab": {
-      english:    "Three-Spot Crab",
-      scientific: "Portunus sanguinolentus",
-      tamil:      "மூன்று புள்ளி நண்டு (Moonru Pulli Nandu)"
-    }
-  };
+  <!-- CAMERA MODAL -->
+  <div id="camModal">
+    <div class="camBox">
+      <div class="camTitle">📷 Capture Crab</div>
+      <div class="vidWrap">
+        <video id="camVideo" autoplay playsinline></video>
+        <div class="vidOverlay"></div>
+      </div>
+      <div id="camStatus">Starting camera…</div>
+      <canvas id="camCanvas"></canvas>
+      <div class="camBtns">
+        <button class="camBtn" id="snapBtn">📸 Snap</button>
+        <button class="camBtn" id="closeCam">✕ Cancel</button>
+      </div>
+    </div>
+  </div>
 
-  const SUGGESTIONS = [
-    "What do mud crabs eat? 🍴",
-    "How to cook flower crab? 👨‍🍳",
-    "Where do three-spot crabs live? 🌊",
-    "Lifespan of a mud crab? ⏳",
-    "நண்டு பற்றி சொல்லுங்க 🦀"
-  ];
+  <!-- MAIN APP -->
+  <div id="app">
+    <header>
+      <div class="sonarRing"></div>
+      <div class="sonarRing"></div>
+      <div class="sonarRing"></div>
+      <div class="logo">🦀</div>
+      <div>
+        <div class="htitle">CrabBot</div>
+        <div class="hsub">TAMIL NADU · CRAB CLASSIFIER · v3.0</div>
+      </div>
+      <div class="depthMeter">
+        <div class="depthLabel">OCEAN DEPTH</div>
+        <div class="depthTrack">
+          <div class="depthFill" id="depthFill"></div>
+        </div>
+        <div class="sdot">
+          <div class="dot" id="dot"></div><span id="stxt">connecting…</span>
+        </div>
+      </div>
+    </header>
 
-  const chat      = document.getElementById("chat");
-  const fileInput = document.getElementById("file-input");
-  const textInput = document.getElementById("text-input");
-  const uploadBtn = document.getElementById("upload-btn");
-  const sendBtn   = document.getElementById("send-btn");
-  const dot       = document.getElementById("dot");
-  const statusTxt = document.getElementById("status-text");
+    <div class="waveDivider">
+      <svg viewBox="0 0 1200 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,11 C200,2 400,20 600,11 C800,2 1000,20 1200,11 L1200,22 L0,22 Z" fill="rgba(0,170,255,0.06)">
+          <animate attributeName="d"
+            values="M0,11 C200,2 400,20 600,11 C800,2 1000,20 1200,11 L1200,22 L0,22 Z;M0,15 C200,5 400,22 600,13 C800,3 1000,19 1200,15 L1200,22 L0,22 Z;M0,11 C200,2 400,20 600,11 C800,2 1000,20 1200,11 L1200,22 L0,22 Z"
+            dur="6s" repeatCount="indefinite" />
+        </path>
+      </svg>
+    </div>
 
-  async function checkHealth() {
-    try {
-      const r = await fetch(`${API}/health`);
-      const d = await r.json();
-      if (d.status === "ok" && d.model_loaded) {
-        dot.classList.add("online"); statusTxt.textContent = "model ready";
-      } else { statusTxt.textContent = "model not loaded"; }
-    } catch { statusTxt.textContent = "backend offline"; }
-  }
-  checkHealth();
+    <div id="chat"></div>
 
-  function scrollBottom() { chat.scrollTop = chat.scrollHeight; }
+    <div id="ia">
+      <div class="ir" id="ir">
+        <button class="ib" id="ub" title="Upload photo">📎</button>
+        <button class="ib" id="cb" title="Take photo">📷</button>
+        <input type="file" id="fi" accept="image/*" />
+        <textarea id="ti" placeholder="Ask about crabs or upload a photo…" rows="1"></textarea>
+        <button id="sb">➤</button>
+      </div>
+      <div id="charCnt">0 / 500</div>
+    </div>
+  </div>
 
-  function addMsg(role, html) {
-    const div = document.createElement("div");
-    div.className = `msg ${role}`;
-    div.innerHTML = `<div class="avatar">${role === "bot" ? "🦀" : "👤"}</div><div class="bubble">${html}</div>`;
-    chat.appendChild(div);
-    scrollBottom();
-    return div;
-  }
+  <script>
+    const API = "https://ancyy22-crabbot.hf.space";
 
-  function addTyping() {
-    const div = document.createElement("div");
-    div.className = "msg bot typing";
-    div.innerHTML = `<div class="avatar">🦀</div><div class="bubble"><span></span><span></span><span></span></div>`;
-    chat.appendChild(div);
-    scrollBottom();
-    return div;
-  }
-
-  function buildResultCard(data) {
-    const info = CRAB_INFO[data.label] || { english: data.label, scientific: "Unknown", tamil: "தெரியவில்லை" };
-
-    const bars = Object.entries(data.all_scores)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, pct]) => `
-        <div class="bar-row">
-          <div class="bar-label"><span>${CRAB_INFO[name]?.english || name}</span><span>${pct.toFixed(1)}%</span></div>
-          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-        </div>`).join("");
-
-    return `
-      <div class="result-card">
-        <div class="species-title">🦀 ${info.english}</div>
-        <table class="name-table">
-          <tr class="row-english"><td>English</td><td>${info.english}</td></tr>
-          <tr class="row-science"><td>Scientific</td><td>${info.scientific}</td></tr>
-          <tr class="row-tamil">  <td>Tamil</td>    <td>${info.tamil}</td></tr>
-        </table>
-        <hr class="divider"/>
-        <div class="confidence-label">Confidence: ${data.confidence.toFixed(1)}%</div>
-        ${bars}
-      </div>`;
-  }
-
-  async function askCrabAI(question) {
-    const typing = addTyping();
-    try {
-      const response = await fetch(`${API}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: question })
-      });
-      const data = await response.json();
-      typing.remove();
-      const answer = data.answer || "Sorry, I couldn't get an answer.";
-      addMsg("bot", answer.replace(/\n\n/g, "<br><br>").replace(/\n/g, "<br>"));
-    } catch {
-      typing.remove();
-      addMsg("bot", "⚠️ Couldn't connect to AI. Make sure your Colab tunnel is running.");
-    }
-  }
-
-  async function classifyImage(file) {
-    const imgUrl = await new Promise(res => {
-      const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file);
+    // ── CUSTOM CURSOR ──
+    const cursorDot = document.getElementById('cursor');
+    const cursorRing = document.getElementById('cursorRing');
+    let cx = 0, cy = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { cx = e.clientX; cy = e.clientY; cursorDot.style.left = cx + 'px'; cursorDot.style.top = cy + 'px'; });
+    (function animCursor() { rx += (cx - rx) * 0.1; ry += (cy - ry) * 0.1; cursorRing.style.left = rx + 'px'; cursorRing.style.top = ry + 'px'; requestAnimationFrame(animCursor); })();
+    document.querySelectorAll('button,.chip,.actBtn,.rxn').forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-grow'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-grow'));
     });
-    addMsg("user", `<img class="preview" src="${imgUrl}" alt="crab photo"/>`);
-    const typing = addTyping();
-    const formData = new FormData();
-    formData.append("image", file);
-    try {
-      const res  = await fetch(`${API}/predict`, { method: "POST", body: formData });
-      const data = await res.json();
-      typing.remove();
-      if (data.error) {
-        addMsg("bot", `⚠️ ${data.error}`);
-      } else {
-        addMsg("bot", `Here's what I found!${buildResultCard(data)}`);
-        // Auto fun fact after classification
-        const info = CRAB_INFO[data.label];
-        if (info) {
-          setTimeout(() => askCrabAI(
-            `Tell me one interesting fun fact about the ${info.english} (${info.scientific}) in 2 sentences.`
-          ), 1000);
-        }
-      }
-    } catch {
-      typing.remove();
-      addMsg("bot", "⚠️ Could not reach the backend. Make sure your Colab tunnel is running.");
+
+    // ── MAGNETIC SEND BUTTON ──
+    const sb = document.getElementById('sb');
+    sb.addEventListener('mousemove', e => { const r = sb.getBoundingClientRect(); const dx = e.clientX - (r.left + r.width / 2); const dy = e.clientY - (r.top + r.height / 2); sb.style.transform = `translate(${dx * .28}px,${dy * .28}px)`; });
+    sb.addEventListener('mouseleave', () => { sb.style.transform = ''; });
+
+    // ── RIPPLE ──
+    function addRipple(el, e) {
+      const r = el.getBoundingClientRect(); const rp = document.createElement('span'); rp.className = 'ripple';
+      const size = Math.max(r.width, r.height);
+      rp.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+      el.appendChild(rp); setTimeout(() => rp.remove(), 600);
     }
-  }
+    document.querySelectorAll('.ib,#sb,.camBtn').forEach(btn => btn.addEventListener('click', e => addRipple(btn, e)));
 
-  async function handleText() {
-    const msg = textInput.value.trim();
-    if (!msg) return;
-    addMsg("user", msg);
-    textInput.value = "";
-    await askCrabAI(msg);
-  }
+    // ── SONAR PING (Web Audio) ──
+    function playPing() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.frequency.setValueAtTime(880, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3); gain.gain.setValueAtTime(0.07, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4); osc.start(); osc.stop(ctx.currentTime + 0.4); } catch (e) { } }
+    function playBubble() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.connect(gain); gain.connect(ctx.destination); osc.frequency.setValueAtTime(600, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.1); gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18); osc.start(); osc.stop(ctx.currentTime + 0.2); } catch (e) { } }
 
-  function handleChip(question) {
-    addMsg("user", question);
-    askCrabAI(question);
-  }
+    // ── TOAST ──
+    const toastEl = document.getElementById('toast'); let toastTimer;
+    function showToast(msg, dur = 2000) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), dur); }
 
-  uploadBtn.addEventListener("click", () => fileInput.click());
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files[0];
-    if (file) { classifyImage(file); fileInput.value = ""; }
-  });
-  sendBtn.addEventListener("click", handleText);
-  textInput.addEventListener("keydown", e => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleText(); }
-  });
+    // ── DATA ──
+    const CI = {
+      flower_crab: { english: "Flower Crab", scientific: "Portunus pelagicus", tamil: "பூ நண்டு (Poo Nandu)", badge: "flower" },
+      mud_crab: { english: "Mud Crab", scientific: "Scylla serrata", tamil: "சேற்று நண்டு (Shetru Nandu)", badge: "mud" },
+      three_dot_crab: { english: "Three-Spot Crab", scientific: "Portunus sanguinolentus", tamil: "மூன்று புள்ளி நண்டு", badge: "three" }
+    };
+    const SUGG = ["What do mud crabs eat?", "How to cook flower crab?", "Lifespan of a mud crab?", "நண்டு பற்றி சொல்லுங்க 🦀"];
 
-  setTimeout(() => {
-    const chips = SUGGESTIONS.map(q =>
-      `<span class="chip" onclick="handleChip('${q}')">${q}</span>`
-    ).join("");
-    addMsg("bot", `
-      Hey! I'm <strong>CrabBot</strong> 🦀 v2.0<br><br>
-      📸 <strong>Upload a crab photo</strong> → I'll identify it with its
-      <span style="color:#f0ede8;font-weight:600">English</span>,
-      <span style="color:#7eb8f7;font-style:italic">Scientific</span> &
-      <span style="color:#7ef7a0">Tamil</span> names + a fun fact!<br>
-      💬 <strong>Ask me anything</strong> about crabs in English or Tamil!
-      <div class="chips">${chips}</div>
-    `);
-  }, 300);
-</script>
+    const chat = document.getElementById('chat');
+    const fi = document.getElementById('fi');
+    const ti = document.getElementById('ti');
+    const dot = document.getElementById('dot');
+    const stxt = document.getElementById('stxt');
+    const ir = document.getElementById('ir');
+    const depthFill = document.getElementById('depthFill');
+    const charCnt = document.getElementById('charCnt');
+    const scrollBtn = document.getElementById('scrollBtn');
+
+    // ── DEPTH METER + SCROLL BTN ──
+    chat.addEventListener('scroll', () => {
+      const pct = chat.scrollTop / (chat.scrollHeight - chat.clientHeight) * 100 || 0;
+      depthFill.style.width = pct + '%';
+      const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 60;
+      scrollBtn.classList.toggle('show', !atBottom && chat.scrollHeight > chat.clientHeight + 100);
+    });
+    function smoothScroll() { chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }); }
+
+    // ── CHAR COUNTER + AUTO-RESIZE ──
+    ti.addEventListener('input', () => {
+      const len = ti.value.length;
+      charCnt.textContent = `${len} / 500`;
+      charCnt.classList.toggle('show', len > 0);
+      charCnt.classList.toggle('warn', len > 420);
+      ir.classList.toggle('typing-active', len > 0);
+      ti.style.height = '44px';
+      ti.style.height = Math.min(ti.scrollHeight, 120) + 'px';
+    });
+
+    // ── HEALTH ──
+    async function checkHealth() { try { const r = await fetch(`${API}/health`), d = await r.json(); if (d.status === "ok" && d.model_loaded) { dot.classList.add("on"); stxt.textContent = "model ready"; } else stxt.textContent = "model not loaded"; } catch { stxt.textContent = "backend offline"; } }
+    setTimeout(checkHealth, 1350);
+
+    function scroll() { chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }); }
+
+    // ── TYPEWRITER ──
+    function typewrite(el, html, speed = 11) {
+      const text = html; let i = 0; el.innerHTML = '';
+      const cursor = document.createElement('span'); cursor.className = 'tw-cursor'; el.appendChild(cursor);
+      return new Promise(resolve => {
+        const iv = setInterval(() => {
+          if (i < text.length) {
+            // Handle HTML tags as atomic units
+            if (text[i] === '<') {
+              const end = text.indexOf('>', i);
+              if (end !== -1) { cursor.insertAdjacentHTML('beforebegin', text.slice(i, end + 1)); i = end + 1; }
+              else { cursor.insertAdjacentHTML('beforebegin', text[i]); i++; }
+            } else {
+              cursor.insertAdjacentHTML('beforebegin', text[i]); i++;
+            }
+            chat.scrollTop = chat.scrollHeight;
+          } else { cursor.remove(); clearInterval(iv); resolve(); }
+        }, speed);
+      });
+    }
+
+    // ── ADD MESSAGE ──
+    function addMsg(role, html, opts = {}) {
+      const wrap = document.createElement('div');
+      wrap.className = `msg ${role}`;
+      const av = document.createElement('div');
+      av.className = 'av' + (role === 'bot' ? ' av-bot' : '');
+      av.textContent = role === 'bot' ? '🦀' : '🧑';
+      const msgWrap = document.createElement('div');
+      msgWrap.className = 'msg-wrap';
+      const bub = document.createElement('div');
+      bub.className = 'bub';
+      msgWrap.appendChild(bub);
+
+      if (role === 'bot' && !opts.noActions) {
+        const actions = document.createElement('div');
+        actions.className = 'msgActions';
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'actBtn'; copyBtn.textContent = '📋 copy';
+        copyBtn.onclick = () => { const tmp = document.createElement('div'); tmp.innerHTML = bub.innerHTML; navigator.clipboard.writeText(tmp.textContent.trim()).then(() => showToast('📋 Copied to clipboard!')); };
+        actions.appendChild(copyBtn);
+        msgWrap.appendChild(actions);
+
+        const rxns = document.createElement('div');
+        rxns.className = 'reactions';
+        ['👍', '🔥', '🦀', '💡'].forEach(emoji => {
+          const rxn = document.createElement('span'); rxn.className = 'rxn'; let cnt = 0;
+          rxn.innerHTML = `${emoji} <span class="cnt"></span>`;
+          rxn.onclick = () => { playBubble(); rxn.classList.toggle('active'); cnt += rxn.classList.contains('active') ? 1 : -1; rxn.querySelector('.cnt').textContent = cnt > 0 ? cnt : ''; };
+          rxns.appendChild(rxn);
+        });
+        msgWrap.appendChild(rxns);
+      }
+
+      wrap.appendChild(av); wrap.appendChild(msgWrap);
+      chat.appendChild(wrap);
+
+      if (opts.typewrite) { typewrite(bub, html); }
+      else { bub.innerHTML = html; }
+      scroll(); return bub;
+    }
+
+    function addTyping() {
+      const d = document.createElement('div'); d.className = 'msg bot typing';
+      d.innerHTML = `<div class="av av-bot">🦀</div><div class="msg-wrap"><div class="bub"><span class="cd">🦀</span><span class="cd">🦀</span><span class="cd">🦀</span></div></div>`;
+      chat.appendChild(d); scroll(); return d;
+    }
+
+    // ── RESULT CARD ──
+    function buildCard(data) {
+      const info = CI[data.label] || { english: data.label, scientific: "Unknown", tamil: "தெரியவில்லை", badge: "mud" };
+      const bars = Object.entries(data.all_scores).sort((a, b) => b[1] - a[1]).map(([n, p]) => `
+    <div class="br"><div class="bl"><span>${CI[n]?.english || n}</span><span>${p.toFixed(1)}%</span></div>
+    <div class="btr"><div class="bf" style="width:${p}%"></div></div></div>`).join('');
+      return `<div class="rc">
+    <div class="sptitle">🦀 ${info.english}<span class="dnaBadge ${info.badge}">◆ ${info.badge.toUpperCase()}</span></div>
+    <table class="nt">
+      <tr class="re"><td>English</td><td>${info.english}</td></tr>
+      <tr class="rs"><td>Scientific</td><td>${info.scientific}</td></tr>
+      <tr class="rt"><td>Tamil</td><td>${info.tamil}</td></tr>
+    </table>
+    <hr class="divLine"/>
+    <div class="clbl">Confidence: ${data.confidence.toFixed(1)}%</div>
+    ${bars}</div>`;
+    }
+
+    const CF = {
+      flower_crab: { funfact: "The Flower Crab gets its name from beautiful flower-like patterns on its shell! 🌸 One of the most popular seafood crabs in Tamil Nadu.", diet: "Flower Crabs are omnivores — they eat small fish, shrimp, mollusks, and algae, hunting actively in shallow coastal waters.", habitat: "Flower Crabs live in shallow coastal waters and seagrass beds along Tamil Nadu's coastline in the Bay of Bengal.", lifespan: "Flower Crabs typically live 1–3 years in the wild, growing rapidly in warm tropical waters.", cooking: "Flower Crab is delicious steamed or in curry! In Tamil Nadu it's made into நண்டு குழம்பு (Nandu Kuzhambu) with coconut milk and spices.", size: "Flower Crabs grow up to 20 cm shell width. Males are larger with brighter blue coloring on their claws.", price: "In Tamil Nadu fish markets, Flower Crabs cost ₹300–₹600 per kg depending on the season.", season: "Best caught October–February along Tamil Nadu coast." },
+      mud_crab: { funfact: "Mud Crabs are the largest crabs in Tamil Nadu mangroves, weighing over 1 kg! Fishermen call them 'Green Gold'. 💚", diet: "Mud Crabs are powerful predators eating oysters, mussels, clams, and small fish. Their massive claws crush hard shells with ease.", habitat: "Mud Crabs live in mangrove estuaries. In Tamil Nadu they're found in Pichavaram and Muthupet mangrove regions.", lifespan: "Mud Crabs can live 3–5 years. Slow-growing but reaching large size, making them valuable for aquaculture.", cooking: "Mud Crab is the king of Tamil Nadu seafood! Make நண்டு வறுவல் (Nandu Varuval) — fried with onions, tomatoes, and spicy masala.", size: "The largest crab in Tamil Nadu — up to 28 cm shell width and weighing 1–2 kg.", price: "Premium seafood at ₹800–₹1500 per kg in Tamil Nadu markets.", season: "Available year-round, best September–March. Farmed extensively in Tamil Nadu's coastal ponds." },
+      three_dot_crab: { funfact: "The Three-Spot Crab gets its name from three distinctive red spots on its shell! 🔴 A fast swimmer important to Tamil Nadu's coastal fisheries.", diet: "Three-Spot Crabs eat small fish, shrimp, and crustaceans — active nocturnal hunters.", habitat: "Three-Spot Crabs prefer open coastal waters and coral reef areas. Commonly caught in the Gulf of Mannar.", lifespan: "Three-Spot Crabs live about 1–2 years, reproducing rapidly as an important commercial species.", cooking: "Sweet, delicate meat — best in spicy Tamil Nadu curry with tamarind and red chillies.", size: "Grow up to 15 cm shell width with good meat yield in the claws.", price: "Around ₹250–₹500 per kg in Tamil Nadu coastal markets.", season: "Best caught November–February along the Tamil Nadu coast." }
+    };
+    const GQA = [
+      { k: ["hi", "hello", "hey", "வணக்கம்", "hai"], a: "வணக்கம்! Hello! 👋 I'm CrabBot, your Tamil Nadu crab expert! Upload a crab photo to identify it, or ask me anything! 🦀" },
+      { k: ["who are you", "what are you", "நீ யாரு"], a: "I'm CrabBot 🦀 — an AI assistant specializing in Tamil Nadu crab species! I identify crabs from photos and answer questions about Flower Crab, Mud Crab, and Three-Spot Crab." },
+      { k: ["difference", "compare", "vs", "best crab", "எந்த நண்டு"], a: "🦀 <b>Mud Crab</b> — Largest, most expensive (₹800–1500/kg).<br><b>Flower Crab</b> — Sweet meat, great for frying (₹300–600/kg).<br><b>Three-Spot Crab</b> — Most affordable (₹250–500/kg)." },
+      { k: ["நண்டு", "nandu", "crab in tamil", "தமிழ்"], a: "தமிழ்நாட்டில் மூன்று முக்கிய நண்டு வகைகள்! 🦀<br><br>1. <b>பூ நண்டு</b> — Flower Crab<br>2. <b>சேற்று நண்டு</b> — Mud Crab<br>3. <b>மூன்று புள்ளி நண்டு</b> — Three-Spot Crab" },
+      { k: ["nutrition", "healthy", "protein", "ஆரோக்கியம்"], a: "Crabs are incredibly nutritious! 💪 High in protein (18–20g/100g), low in fat, rich in Omega-3, Zinc, and Vitamin B12!" },
+      { k: ["buy", "market", "price", "cost", "விலை"], a: "Buy fresh crabs in Tamil Nadu at: 🛒<br>• <b>Chennai</b> — Kasimedu Fish Market<br>• <b>Rameswaram</b> — Direct from fishermen<br>• <b>Tuticorin</b> — Harbour fish market" },
+      { k: ["recipe", "cook", "curry", "சமையல்", "குழம்பு"], a: "Classic நண்டு குழம்பு! 👨‍🍳<br><br>1. Marinate crabs with turmeric & salt<br>2. Fry onions, tomatoes, ginger-garlic<br>3. Add spices & crabs, cook 15 mins<br>4. Add coconut milk, simmer 5 mins 🌿" }
+    ];
+    function getAnswer(q) {
+      const ql = q.toLowerCase();
+      const sm = [{ k: ["flower", "பூ நண்டு", "poo nandu", "pelagicus"], s: "flower_crab" }, { k: ["mud", "சேற்று", "shetru", "serrata"], s: "mud_crab" }, { k: ["three", "spot", "மூன்று", "moonru", "sanguinolentus"], s: "three_dot_crab" }];
+      const tm = [{ k: ["eat", "food", "diet", "உணவு"], t: "diet" }, { k: ["live", "habitat", "where", "வாழ்"], t: "habitat" }, { k: ["lifespan", "how long", "age", "ஆயுள்"], t: "lifespan" }, { k: ["cook", "recipe", "curry", "சமையல்"], t: "cooking" }, { k: ["size", "big", "large", "அளவு"], t: "size" }, { k: ["price", "cost", "buy", "விலை"], t: "price" }, { k: ["season", "catch", "when", "பருவம்"], t: "season" }, { k: ["fact", "about", "பற்றி", "சொல்லு"], t: "funfact" }];
+      let ds = null, dt = null;
+      for (const s of sm) if (s.k.some(k => ql.includes(k))) { ds = s.s; break; }
+      for (const t of tm) if (t.k.some(k => ql.includes(k))) { dt = t.t; break; }
+      if (ds && dt) return CF[ds][dt]; if (ds) return CF[ds].funfact;
+      if (dt === "diet") return "All three crabs are omnivores! 🍴<br><b>Flower Crab</b> — fish & shrimp<br><b>Mud Crab</b> — crushes oysters & mussels<br><b>Three-Spot</b> — nocturnal hunter";
+      if (dt === "habitat") return "Tamil Nadu crabs' habitats! 🌊<br><b>Flower Crab</b> — coastal waters<br><b>Mud Crab</b> — Pichavaram mangroves<br><b>Three-Spot</b> — Gulf of Mannar";
+      for (const qa of GQA) if (qa.k.some(k => ql.includes(k))) return qa.a;
+      return "I know a lot about Tamil Nadu crabs! 🦀 Ask about diet, habitat, cooking, or price — or upload a photo! 📸";
+    }
+
+    // ── AI CHAT ──
+    async function askAI(q) {
+      const t = addTyping();
+      try {
+        const r = await fetch(`${API}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: q }) });
+        const d = await r.json(); t.remove();
+        const bub = addMsg("bot", "", { typewrite: true });
+        typewrite(bub, (d.answer || getAnswer(q)).replace(/\n\n/g, "<br><br>").replace(/\n/g, "<br>"));
+      } catch { t.remove(); const bub = addMsg("bot", "", { typewrite: true }); typewrite(bub, getAnswer(q)); }
+    }
+
+    // ── IMAGE CLASSIFY ──
+    async function classifyImg(file) {
+      const url = await new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); });
+      addMsg("user", `<img class="prev" src="${url}" alt="crab"/>`, { noActions: true });
+      const t = addTyping();
+      const fd = new FormData(); fd.append("image", file);
+      try {
+        const r = await fetch(`${API}/predict`, { method: "POST", body: fd });
+        const d = await r.json(); t.remove();
+        if (d.error) addMsg("bot", `⚠️ ${d.error}`);
+        else {
+          addMsg("bot", `Here's what I found! 🔍${buildCard(d)}`);
+          if (CI[d.label] && CF[d.label]) setTimeout(() => { const b = addMsg("bot", "", { typewrite: true }); typewrite(b, `💡 <b>Fun Fact:</b> ${CF[d.label].funfact}`); }, 900);
+        }
+      } catch { t.remove(); addMsg("bot", "⚠️ Could not reach the backend. Please try again!"); }
+    }
+
+    // ── SEND ──
+    function send() { const m = ti.value.trim(); if (!m) return; playPing(); addMsg("user", m, { noActions: true }); ti.value = ''; ti.style.height = '44px'; ir.classList.remove('typing-active'); charCnt.classList.remove('show', 'warn'); askAI(m); }
+    function chip(q) { addMsg("user", q, { noActions: true }); askAI(q); }
+
+    // ── UPLOAD ──
+    document.getElementById('ub').onclick = () => fi.click();
+    fi.onchange = () => { const f = fi.files[0]; if (f) { classifyImg(f); fi.value = ''; } };
+
+    // ── CAMERA ──
+    const camModal = document.getElementById('camModal');
+    const camVideo = document.getElementById('camVideo');
+    const camCanvas = document.getElementById('camCanvas');
+    const camStatus = document.getElementById('camStatus');
+    const snapBtn = document.getElementById('snapBtn');
+    const closeCam = document.getElementById('closeCam');
+    let camStream = null;
+
+    document.getElementById('cb').onclick = async () => {
+      camModal.classList.add('open'); camStatus.textContent = 'Starting camera…'; snapBtn.disabled = true;
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        camVideo.srcObject = camStream; camVideo.style.display = 'block';
+        camStatus.textContent = '📍 Camera live — aim at a crab!'; snapBtn.disabled = false;
+      } catch { camStatus.textContent = 'Camera denied. Use 📎 to upload instead.'; }
+    };
+    function stopCam() { if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; } camVideo.style.display = 'none'; camModal.classList.remove('open'); camStatus.textContent = 'Starting camera…'; snapBtn.disabled = true; }
+    closeCam.onclick = stopCam;
+    camModal.onclick = e => { if (e.target === camModal) stopCam(); };
+    snapBtn.onclick = () => {
+      if (!camStream) return; playPing();
+      camCanvas.width = camVideo.videoWidth; camCanvas.height = camVideo.videoHeight;
+      camCanvas.getContext('2d').drawImage(camVideo, 0, 0);
+      camCanvas.toBlob(blob => { if (blob) { const file = new File([blob], 'camera-crab.jpg', { type: 'image/jpeg' }); stopCam(); classifyImg(file); } }, 'image/jpeg', 0.92);
+    };
+
+    // ── INPUT EVENTS ──
+    document.getElementById('sb').onclick = send;
+    ti.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+
+    // ── WELCOME ──
+    setTimeout(() => {
+      const chips = SUGG.map(q => `<span class="chip" onclick="chip('${q}')">${q}</span>`).join('');
+      const bub = addMsg("bot", "", { noActions: true });
+      typewrite(bub, `வணக்கம்! I'm <strong>CrabBot</strong> 🦀<br><br>📸 <strong>Upload or capture a photo</strong> → I'll identify the species with <span style="color:#ffe8b0">English</span>, <span style="color:#5dd8ff;font-style:italic">Scientific</span> &amp; <span style="color:#a8e6ff">Tamil</span> names!<br>💬 <strong>Ask me anything</strong> about crabs!<div class="chips">${chips}</div>`, 8);
+    }, 1400);
+  </script>
 </body>
+
 </html>
